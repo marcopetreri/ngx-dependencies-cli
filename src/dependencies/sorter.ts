@@ -1,13 +1,20 @@
 import TopologicalSort from 'topological-sort';
+import { DependenciesMap } from './cruiser';
+import { ProjectsMap } from 'src/angular';
 
-export function getTopologicalSortedDependencies(
-  dependencies: [string, string[]][]
-) {
-  const sort = new TopologicalSort(new Map(dependencies));
+export default class DependencySorter {
+  constructor() {}
 
-  dependencies.forEach(([projectName, projectDeps]) => {
-    projectDeps.forEach(projectDep => sort.addEdge(projectName, projectDep));
-  });
+  getTopologicalSortedDependencies(
+    projects: ProjectsMap,
+    dependencies: DependenciesMap
+  ): string[] {
+    const sort = new TopologicalSort(projects);
 
-  return [...sort.sort().keys()].reverse();
+    [...dependencies].forEach(([name, deps]) => {
+      deps.forEach(projectDep => sort.addEdge(name, projectDep));
+    });
+
+    return [...sort.sort().keys()].reverse();
+  }
 }

@@ -1,9 +1,7 @@
 import chalk from 'chalk';
 import treeify from 'treeify';
 
-let logger: Logger = null;
-
-export class Logger {
+export default class Logger {
   log(...args: any[]) {
     console.log(...this._format(args, chalk.blue));
   }
@@ -14,6 +12,10 @@ export class Logger {
 
   error(...args: any[]) {
     console.error(...this._format(args, chalk.bold.red));
+  }
+
+  success(...args: any[]) {
+    console.log(...this._format(args, chalk.bold.green));
   }
 
   dir(o: {}) {
@@ -27,8 +29,4 @@ export class Logger {
   private _format(args: any[], formatter: (s: string) => string): any[] {
     return args.map(arg => (typeof arg === 'string' ? formatter(arg) : arg));
   }
-}
-
-export function getLogger(): Logger {
-  return logger || (logger = new Logger());
 }

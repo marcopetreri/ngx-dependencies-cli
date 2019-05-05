@@ -1,38 +1,34 @@
 import { cruise } from 'dependency-cruiser';
-import {
-  getProjectFilesPaths,
-  getExistingAngularProjectsNames
-} from '../angular';
-import { getLogger } from '../logger';
+import Angular, { ProjectsMap } from '../angular';
 
-const logger = getLogger();
-const projectsNames = getExistingAngularProjectsNames();
+export type DependenciesMap = Map<string, string[]>;
 
-export function getProjectDependencies(
-  rootPath: string,
-  project: [string, {}]
-): [string, string[]] {
-  const [projectName, projectData] = project;
+export default class DependencyCruiser {
+  constructor(private _ng: Angular) {}
 
-  const paths = getProjectFilesPaths(rootPath, projectData);
+  public getProjectDependencies(projectData: any): string[] {
+    const paths = this._ng.getProjectFilesPaths(
+      projectData.root,
+      projectData.projectType
+    );
 
-  const cruised = cruise(paths, {
-    exclude: '(node_modules)',
-    tsPreCompilationDeps: true
-  });
+    const cruised = cruise(paths, {
+      exclude: '(node_modules)',
+      tsPreCompilationDeps: true
+    });
 
-  const deps = cruised.modules
-    .filter((module: { source: string }) =>
-      projectsNames.find(pName => pName === module.source)
-    )
-    .map((module: { source: string }) => module.source) as string[];
+    const deps = cruised.modules.map(
+      (module: { source: string }) => module.source
+    ) as string[];
 
-  return [projectName, deps];
-}
+    return deps;
+  }
 
-export function getProjectsDependencies(
-  rootPath: string,
-  projects: [string, {}][]
-): [string, string[]][] {
-  return projects.map(project => getProjectDependencies(rootPath, project));
+  getProjectsDependencies(projects: ProjectsMap): DependenciesMap {
+    const deps = [...projects].map(
+      ([name, data]) =>
+        [name, this.getProjectDependencies(data)] as [string, string[]]
+    );
+    return new Map(deps);
+  }
 }

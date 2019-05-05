@@ -1,85 +1,96 @@
-import { getLogger } from './logger';
+import Logger from './logger';
 import AngularCLI from '@angular/cli';
 import { resolve } from '@angular-devkit/core/node';
 
-const logger = getLogger();
+export type AngularCLI = (opts: {
+  testing?: boolean;
+  cliArgs: string[];
+}) => Promise<number>;
 
-export type AngularProjectType = 'library' | 'application';
+export type ProjectsMap = Map<string, any>;
 
-function getProjectsTypeFilterFn(type: AngularProjectType) {
-  return ([, projectData]) => projectData.projectType === type;
+export enum AngularProjectTypes {
+  LIB = 'library',
+  APP = 'application'
 }
 
-export function getProjectFilesPaths(rootPath: string, projectData: any) {
-  return [
-    `${rootPath}/${projectData.root}` +
-      (projectData.projectType === 'library'
-        ? '/src/lib/**/*.ts'
-        : '/src/app/**/*.ts')
-  ];
+export interface ProjectFilters {
+  type?: AngularProjectTypes;
+  names?: string[];
 }
 
-export function getAngularCLI(rootPath: string) {
-  let cli: (opts: { testing?: boolean; cliArgs: string[] }) => Promise<number>;
+export default class Angular {
+  private _cli: AngularCLI;
+  private _json: any;
 
-  try {
-    const localNgCli = resolve('@angular/cli', {
-      checkGlobal: false,
-      basedir: rootPath,
-      preserveSymlinks: true,
-      checkLocal: true
-    });
+  constructor(private _rootPath: string, private _logger: Logger) {
+    this._json = this._getJSON();
+    this._cli = this._getCLI();
+  }
 
-    cli = require(localNgCli);
+  public get cli() {
+    return this._cli;
+  }
 
-    if ('default' in cli) {
-      cli = cli['default'];
+  public getProjects(): ProjectsMap {
+    return new Map(Object.entries(this._json.projects));
+  }
+
+  public filterProjects(
+    projects: ProjectsMap,
+    { type, names }: ProjectFilters
+  ): ProjectsMap {
+    let entries = [...projects];
+    if (names) {
+      entries = entries.filter(this._getProjectsNamesFilterFn(names));
     }
-  } catch (e) {
-    logger.error('No local cli available');
-    cli = require('./cli');
+    if (type) {
+      entries = entries.filter(this._getProjectsTypeFilterFn(type));
+    }
+    return new Map(entries);
   }
-  return function(opts: { testing?: boolean; cliArgs: string[] }) {
-    const _cli = cli;
 
-    return AngularCLI(opts).catch(err => {
-      logger.error('Unknown error: ' + err.toString());
-      process.exit(127);
-    });
-  };
-}
-
-export function getAngularJSON(rootPath?: string): any {
-  const p = rootPath || process.cwd();
-  let json: {};
-  try {
-    json = require(p + '/angular.json');
-  } catch (e) {
-    logger.error('No angular.json file found', e);
-    throw e;
+  public getProjectFilesPaths(
+    projectRootPath: string,
+    type: AngularProjectTypes
+  ): string[] {
+    return [
+      `${this._rootPath}/${projectRootPath}` +
+        (type === 'library' ? '/src/lib/**/*.ts' : '/src/app/**/*.ts')
+    ];
   }
-  return json;
-}
 
-export function getAngularProjectsEntriesByType(
-  type?: AngularProjectType,
-  angularJSON?: any
-) {
-  if (type !== 'application' && type !== 'library') {
-    logger.error(`Type ${type} is not an Angular project`);
-    return [];
+  public getProjectsNames(): string[] {
+    return Object.keys(this._json.projects);
   }
-  const t = type || 'library';
-  const j = angularJSON || getAngularJSON();
-  return Object.entries(j.projects).filter(getProjectsTypeFilterFn(t));
-}
 
-export function getAngularProjectByName(name: string, angularJSON?: any) {
-  const j = angularJSON || getAngularJSON();
-  return Object.entries(j.projects).find(([pName]) => pName === name);
-}
+  public validateProjectType(type: string): boolean {
+    return [AngularProjectTypes.APP, AngularProjectTypes.LIB].includes(
+      type as AngularProjectTypes
+    );
+  }
 
-export function getExistingAngularProjectsNames(angularJSON?: any) {
-  const j = angularJSON || getAngularJSON();
-  return Object.keys(j.projects);
+  private _getProjectsTypeFilterFn(type: AngularProjectTypes) {
+    return ([, projectData]) => projectData.projectType === type;
+  }
+
+  private _getProjectsNamesFilterFn(names: string[]) {
+    return ([name, ,]) => names.includes(name);
+  }
+
+  private _getJSON(): Object {
+    const p = this._rootPath;
+    let json: Object;
+    try {
+      json = require(p + '/angular.json');
+    } catch (e) {
+      this._logger.error(`No angular.json file found in ${this._rootPath}`, e);
+      throw e;
+    }
+    return json;
+  }
+
+  private _getCLI() {
+    return AngularCLI;
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "ngx-dependencies-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ng-cli wrapper that takes in account for dependencies ",
   "main": "dist/index.js",
   "bin": {
@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "watch": "tsc - w"
+    "watch": "tsc -w",
+    "publish": "npm run build && npm publish"
   },
   "author": "",
   "license": "MIT",
