@@ -1,17 +1,28 @@
 {
-  "name": "@bmeme/angular-dependencies-builder",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "ngx-dependencies-cli",
+  "version": "0.1.0",
+  "description": "ng-cli wrapper that takes in account for dependencies ",
+  "main": "dist/index.js",
+  "bin": {
+    "ngd": "dist/cli.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "watch": "tsc - w"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "dependency-tree": "^7.0.2"
+    "@angular/cli": "^7.3.8",
+    "chalk": "^2.4.2",
+    "commander": "^2.20.0",
+    "dependency-cruiser": "^4.15.3",
+    "topological-sort": "^0.3.0",
+    "treeify": "^1.1.0"
   },
   "devDependencies": {
-    "eslint": "^5.16.0"
+    "@types/node": "^11.13.5",
+    "@types/treeify": "^1.0.0",
+    "typescript": "^3.4.3"
   }
 }
