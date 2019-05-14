@@ -3,11 +3,13 @@
 import cli, { Command } from 'commander';
 import Angular from './angular';
 import Logger from './logger';
-import { extractUnknownOptions, parseBoolean } from './utils';
+import { parseBoolean } from './utils';
 import DependencyResolver from './dependencies/resolver';
 import DependencyCruiser from './dependencies/cruiser';
 import DependencySorter from './dependencies/sorter';
 import DependencyValidator from './dependencies/validator';
+import { getBuildCommand } from './commands/build';
+import { getListCommand } from './commands/list';
 
 const logger = new Logger(),
   rootPath = process.cwd();
@@ -36,80 +38,25 @@ cli
 cli
   .command('build [project] [otherProjects...]', '')
   .allowUnknownOption()
-  .option('-d, --dependant', 'Builds [projects] with their dependencies', true)
+  .option(
+    '-d, --dependant [value]',
+    'Builds [projects] with their dependencies',
+    parseBoolean,
+    true
+  )
   .option('-a, --affected', 'Builds all projects affected by [projects]')
   .option('-A, --all', 'Builds all projects')
   .option(
     '-F, --filter [type]',
     'Builds projects of certain type (library or application)'
   )
-  .action(function(project: string, otherProjects: string[], cmd: Command) {
-    // logger.log(project, otherProjects);
-    logger.dir(cmd);
-    const remaining = extractUnknownOptions(cmd);
-    // logger.dir(remaining);
+  .option('-l, --libraries', 'Builds all library projects')
+  .action(getBuildCommand(logger, ng, resolver));
 
-    let prjsList: string[] = [];
-    let depsList: string[] = [];
-
-    if (cmd.all || cmd.filter) {
-      prjsList = ng.getProjectsNames();
-      if (cmd.filter) {
-        if (ng.validateProjectType(cmd.filter)) {
-          const projects = ng.getProjects();
-          prjsList = prjsList.filter(
-            prj => projects.get(prj).projectType === cmd.filter
-          );
-        } else {
-          logger.error('Provide a valid project type');
-          process.exit(0);
-        }
-      }
-    } else if (project) {
-      prjsList = [project, ...otherProjects];
-    } else {
-      logger.error(
-        'Provide a project name or a -A (--all) -F (--filter) option'
-      );
-      process.exit(0);
-    }
-
-    try {
-      if (cmd.affected) {
-        depsList = resolver.resolveProjectsListAffecteds(prjsList);
-      } else if (cmd.dependant) {
-        depsList = resolver.resolveProjectsListDependencies(prjsList);
-      } else {
-        depsList = prjsList;
-      }
-    } catch (e) {
-      logger.error(e);
-    }
-    logger.dir(depsList);
-
-    // const operations = depsList.map(dep => () =>
-    //   ng.cli({
-    //     cliArgs: ['build', dep, ...remaining]
-    //   })
-    // );
-
-    // const serial = (proms: (() => Promise<number>)[]) =>
-    //   proms.reduce(
-    //     (prom, func) =>
-    //       prom.then(result => func().then(Array.prototype.concat.bind(result))),
-    //     Promise.resolve([])
-    //   );
-
-    // serial(operations).then(() => {
-    //   logger.success('\n\nOhhhh Yeahhhh!');
-    // });
-  });
-
-cli.command('list').action(() => {
-  // const libProjects = getAngularProjectsEntriesByType('library', aJSON);
-  // const deps = getProjectsDependencies(rootPath, libProjects);
-  // const sortedDepsName = getTopologicalSortedDependencies(deps);
-  // logger.dir(sortedDepsName);
-});
+cli
+  .command('list [project] [otherProjects...]')
+  .option('-d, --dependant [value]', 'Lists [projects] dependencies', true)
+  .option('-a, --affected', 'Lists all projects affected by [projects]')
+  .action(getListCommand(logger, ng, resolver));
 
 cli.parse(process.argv);

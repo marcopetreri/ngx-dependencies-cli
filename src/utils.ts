@@ -28,5 +28,13 @@ export function extractUnknownOptions(command: Command) {
 }
 
 export function parseBoolean(val: any) {
-  return !!val;
+  switch (val) {
+    case 'false':
+    case '0':
+      return false;
+    case 'true':
+    case '1':
+    default:
+      return true;
+  }
 }
