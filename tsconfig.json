@@ -3,8 +3,7 @@
     "target": "es5",
     "module": "commonjs",
     "lib": ["es2018", "dom"],
-    "outDir": "dist",
-    "rootDir": "src",
+    "outDir": "./dist",
     "declaration": true,
     "sourceMap": true,
     "strict": true,
@@ -16,5 +15,5 @@
     "resolveJsonModule": true,
     "downlevelIteration": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["./src/**/*.ts"]
 }

@@ -1,21 +1,19 @@
 import { Command } from 'commander';
 import { extractUnknownOptions } from '../utils';
-import Angular, { AngularProjectTypes } from '../angular';
+import { Angular, AngularProjectTypes, AngularProjectData } from '../angular';
 import Logger from '../logger';
-import DependencyResolver from '../dependencies/resolver';
+import { DependencyResolver } from '../dependencies/resolver';
+import { DependencyNode } from 'src/dependencies/models';
 
-export const getBuildCommand = (
-  logger: Logger,
-  ng: Angular,
-  resolver: DependencyResolver
-) => (project: string, otherProjects: string[], cmd: Command) => {
-  // logger.log(project, otherProjects);
-  logger.dir(cmd);
+export const getBuildCommand = (ng: Angular, resolver: DependencyResolver) => (
+  project: string,
+  otherProjects: string[],
+  cmd: Command
+) => {
   const remaining = extractUnknownOptions(cmd);
-  // logger.dir(remaining);
 
   let prjsList: string[] = [];
-  let depsList: string[] = [];
+  let depsTree: DependencyNode<AngularProjectData>;
 
   if (cmd.libraries) {
     cmd.filter = AngularProjectTypes.LIB;
@@ -26,49 +24,46 @@ export const getBuildCommand = (
     if (cmd.filter) {
       if (ng.validateProjectType(cmd.filter)) {
         const projects = ng.getProjects();
-        prjsList = prjsList.filter(
-          prj => projects.get(prj).projectType === cmd.filter
-        );
+        prjsList = prjsList.filter(prj => projects.get(prj).projectType === cmd.filter);
       } else {
-        logger.error('Provide a valid project type');
+        Logger.error('Provide a valid project type');
         process.exit(0);
       }
     }
   } else if (project) {
     prjsList = [project, ...otherProjects];
   } else {
-    logger.error('Provide a project name or a -A (--all) -F (--filter) option');
+    Logger.error('Provide a project name or a -A (--all) -F (--filter) option');
     process.exit(0);
   }
 
   try {
     if (cmd.affected) {
-      depsList = resolver.resolveProjectsListAffecteds(prjsList);
-      depsList = resolver.resolveProjectsListDependencies(depsList);
+      // depsList = resolver.resolveProjectsListAffecteds(prjsList);
+      // depsList = resolver.resolveProjectsListDependencies(depsList);
     } else if (cmd.dependant) {
-      depsList = resolver.resolveProjectsListDependencies(prjsList);
+      depsTree = resolver.resolveProjectDependencies(project);
     } else {
-      depsList = prjsList;
+      // depsList = prjsList;
     }
   } catch (e) {
-    logger.error(e);
+    Logger.error(e);
   }
-  logger.dir(depsList);
+  Logger.log(depsTree);
 
-  const operations = depsList.map(dep => () =>
-    ng.cli({
-      cliArgs: ['build', dep, ...remaining]
-    })
-  );
+  // const operations = depsList.map(dep => () =>
+  //   ng.cli({
+  //     cliArgs: ['build', dep, ...remaining]
+  //   })
+  // );
 
-  const serial = (proms: (() => Promise<number>)[]) =>
-    proms.reduce(
-      (prom, func) =>
-        prom.then(result => func().then(Array.prototype.concat.bind(result))),
-      Promise.resolve([])
-    );
+  // const serial = (proms: (() => Promise<number>)[]) =>
+  //   proms.reduce(
+  //     (prom, func) => prom.then(result => func().then(Array.prototype.concat.bind(result))),
+  //     Promise.resolve([])
+  //   );
 
-  serial(operations).then(() => {
-    logger.success('\n\nOhhhh Yeahhhh!');
-  });
+  // serial(operations).then(() => {
+  //   logger.success('\n\nOhhhh Yeahhhh!');
+  // });
 };

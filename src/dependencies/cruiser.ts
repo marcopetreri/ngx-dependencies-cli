@@ -1,18 +1,11 @@
 import { cruise } from 'dependency-cruiser';
-import Angular, { ProjectsMap } from '../angular';
+import { PathsMap } from './models';
 
-export type DependenciesMap = Map<string, string[]>;
+export class DependencyCruiser {
+  constructor() {}
 
-export default class DependencyCruiser {
-  constructor(private _ng: Angular) {}
-
-  public getProjectDependencies(projectData: any): string[] {
-    const paths = this._ng.getProjectFilesPaths(
-      projectData.root,
-      projectData.projectType
-    );
-
-    const cruised = cruise(paths, {
+  public getProjectImports(filesPaths: string[]): string[] {
+    const cruised = cruise(filesPaths, {
       exclude: '(node_modules)',
       tsPreCompilationDeps: true
     });
@@ -24,10 +17,10 @@ export default class DependencyCruiser {
     return deps;
   }
 
-  getProjectsDependencies(projects: ProjectsMap): DependenciesMap {
-    const deps = [...projects].map(
-      ([name, data]) =>
-        [name, this.getProjectDependencies(data)] as [string, string[]]
+  getProjectsImports(projectsFilesPaths: PathsMap): PathsMap {
+    const deps = [...projectsFilesPaths].map(
+      ([name, paths]) =>
+        [name, this.getProjectImports(paths)] as [string, string[]]
     );
     return new Map(deps);
   }

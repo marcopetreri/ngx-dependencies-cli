@@ -1,29 +1,17 @@
-import Logger from './logger';
 import AngularCLI from '@angular/cli';
-import { resolve } from '@angular-devkit/core/node';
+import {
+  AngularProjectsMap,
+  AngularProjectFilters,
+  AngularProjectTypes,
+  AngularProjectData
+} from './models';
+import Logger from '../logger';
 
-export type AngularCLI = (opts: {
-  testing?: boolean;
-  cliArgs: string[];
-}) => Promise<number>;
-
-export type ProjectsMap = Map<string, any>;
-
-export enum AngularProjectTypes {
-  LIB = 'library',
-  APP = 'application'
-}
-
-export interface ProjectFilters {
-  type?: AngularProjectTypes;
-  names?: string[];
-}
-
-export default class Angular {
-  private _cli: AngularCLI;
+export class Angular {
+  private _cli: typeof AngularCLI;
   private _json: any;
 
-  constructor(private _rootPath: string, private _logger: Logger) {
+  constructor(private _rootPath: string) {
     this._json = this._getJSON();
     this._cli = this._getCLI();
   }
@@ -32,14 +20,14 @@ export default class Angular {
     return this._cli;
   }
 
-  public getProjects(): ProjectsMap {
+  public getProjects(): AngularProjectsMap {
     return new Map(Object.entries(this._json.projects));
   }
 
   public filterProjects(
-    projects: ProjectsMap,
-    { type, names }: ProjectFilters
-  ): ProjectsMap {
+    projects: AngularProjectsMap,
+    { type, names }: AngularProjectFilters
+  ): AngularProjectsMap {
     let entries = [...projects];
     if (names) {
       entries = entries.filter(this._getProjectsNamesFilterFn(names));
@@ -50,13 +38,10 @@ export default class Angular {
     return new Map(entries);
   }
 
-  public getProjectFilesPaths(
-    projectRootPath: string,
-    type: AngularProjectTypes
-  ): string[] {
+  public getProjectFilesPaths(project: AngularProjectData): string[] {
     return [
-      `${this._rootPath}/${projectRootPath}` +
-        (type === 'library' ? '/src/lib/**/*.ts' : '/src/app/**/*.ts')
+      `${this._rootPath}/${project.sourceRoot}` +
+        (project.projectType === 'library' ? '/lib/**/*.ts' : '/app/**/*.ts')
     ];
   }
 
@@ -65,9 +50,15 @@ export default class Angular {
   }
 
   public validateProjectType(type: string): boolean {
-    return [AngularProjectTypes.APP, AngularProjectTypes.LIB].includes(
-      type as AngularProjectTypes
-    );
+    return [AngularProjectTypes.APP, AngularProjectTypes.LIB].includes(type as AngularProjectTypes);
+  }
+
+  public validateProject(project: string): boolean {
+    return Object.keys(this._json.projects).includes(project);
+  }
+
+  public getProjectValidatorFn(): (project: string) => boolean {
+    return (project: string) => this.validateProject(project);
   }
 
   private _getProjectsTypeFilterFn(type: AngularProjectTypes) {
@@ -84,7 +75,7 @@ export default class Angular {
     try {
       json = require(p + '/angular.json');
     } catch (e) {
-      this._logger.error(`No angular.json file found in ${this._rootPath}`, e);
+      Logger.error(`No angular.json file found in ${this._rootPath}`, e);
       throw e;
     }
     return json;

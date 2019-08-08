@@ -1,34 +1,34 @@
 #!/usr/bin/env node
 
-import cli, { Command } from 'commander';
-import Angular from './angular';
+import cli from 'commander';
+import { Angular } from './angular/angular';
 import Logger from './logger';
 import { parseBoolean } from './utils';
-import DependencyResolver from './dependencies/resolver';
-import DependencyCruiser from './dependencies/cruiser';
+import { DependencyResolver } from './dependencies/resolver';
+import { DependencyCruiser } from './dependencies/cruiser';
 import DependencySorter from './dependencies/sorter';
 import DependencyValidator from './dependencies/validator';
 import { getBuildCommand } from './commands/build';
 import { getListCommand } from './commands/list';
 
-const logger = new Logger(),
-  rootPath = process.cwd();
+import 'source-map-support/register';
+
+const rootPath = process.cwd();
 
 let ng: Angular;
 
 try {
-  ng = new Angular(rootPath, logger);
+  ng = new Angular(rootPath);
 } catch (e) {
-  logger.warn('Exiting from ngd');
+  Logger.warn('Exiting from ngd');
   process.exit();
 }
 
 const resolver = new DependencyResolver(
-  new DependencyCruiser(ng),
+  new DependencyCruiser(),
   new DependencySorter(),
-  new DependencyValidator(ng),
-  ng,
-  logger
+  new DependencyValidator(),
+  ng
 );
 
 cli
@@ -46,17 +46,22 @@ cli
   )
   .option('-a, --affected', 'Builds all projects affected by [projects]')
   .option('-A, --all', 'Builds all projects')
-  .option(
-    '-F, --filter [type]',
-    'Builds projects of certain type (library or application)'
-  )
+  .option('-F, --filter [type]', 'Builds projects of certain type (library or application)')
   .option('-l, --libraries', 'Builds all library projects')
-  .action(getBuildCommand(logger, ng, resolver));
+  .action(getBuildCommand(ng, resolver));
 
 cli
   .command('list [project] [otherProjects...]')
-  .option('-d, --dependant [value]', 'Lists [projects] dependencies', true)
+  .description('It Lists [projects] dependencies')
   .option('-a, --affected', 'Lists all projects affected by [projects]')
-  .action(getListCommand(logger, ng, resolver));
+  .option('-r, --recursive', 'Applies recursive strategy to resolve the dependencies')
+  .option(
+    '-g, --generation [value]',
+    'Stop the dependencies resolve to [value] generation',
+    parseInt
+  )
+  .action(getListCommand(ng, resolver));
+
+cli.option('--debug [value]', 'Prints debug informations', false);
 
 cli.parse(process.argv);
