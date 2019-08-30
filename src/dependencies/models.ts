@@ -1,3 +1,5 @@
+import Logger from '../logger';
+
 export type PathsMap = Map<string, string[]>;
 
 export type DependenciesMap<T> = Map<string, DependencyNode<T>>;
@@ -14,46 +16,62 @@ export class DependencyNode<T = null> {
     this.gen = (parent && parent.gen + 1) || 0;
   }
 
-  public getDependenciesNames(maxDepth?: number): string[] {
-    return this._getUniqueNodesByName(this.getChildrenList(maxDepth)).map(node => node.name);
+  public get childrenEntries(): [string, DependencyNode<T>][] {
+    return [...this.children];
   }
 
-  public getChildrenList(maxDepth?: number): DependencyNode<T>[] {
-    return this._reduceChildren(
+  public get childrenNames(): string[] {
+    return this.childrenEntries.map(([name]) => name);
+  }
+
+  public get childrenAsObject(): { [key: string]: any } {
+    return this.childrenEntries.reduce((acc, [name, node]) => {
+      acc[name] = node.childrenAsObject;
+      return acc;
+    }, {});
+  }
+
+  public flatDistinctChildren(maxDepth?: number): DependencyNode<T>[] {
+    return this.flatChildren(maxDepth).filter(this._getDistinctFilterFn());
+  }
+
+  public flatChildren(maxDepth?: number): DependencyNode<T>[] {
+    return this.childrenEntries.reduce(
       (acc, [, node]) => {
         if (maxDepth != null && maxDepth === node.gen) {
           return acc;
         } else {
           acc.push(node);
-          return acc.concat(node.getChildrenList(maxDepth));
+          return acc.concat(node.flatChildren(maxDepth));
         }
       },
       [] as DependencyNode<T>[]
     );
   }
 
+  public traverseChildren(
+    fn: (node: DependencyNode<T>, name: string) => void,
+    maxDepth?: number
+  ): void {
+    this.childrenEntries.forEach(([name, node]) => {
+      if (maxDepth != null && maxDepth === node.gen) {
+        return;
+      }
+      fn(node, name);
+      node.traverseChildren(fn, maxDepth);
+    });
+  }
+
   public toString(): string {
-    return (
-      `${this.gen} - ${this.name}
-      Dependencies:
-    ` + this._reduceChildren((acc, node) => acc + node.toString(), '')
-    );
+    return `${this.name}
+${Logger.tree(this.childrenAsObject, true)}`;
   }
 
-  private _reduceChildren<S = [string, DependencyNode<T>]>(
-    reduceFn: (acc: S, node: [string, DependencyNode<T>]) => S,
-    acc?: S
-  ): S {
-    return [...this.children].reduce(reduceFn, acc);
-  }
-
-  // private _recurseNode(recurseFn , acc, maxDepth?: number) {
-  //   return [...this.children]((acc, [name, node]) => {
-  //     return maxDepth != null && maxDepth === node.gen ? acc this._reduceChildren(acc, node)
-  //   }, acc);
-  // }
-
-  private _getUniqueNodesByName(nodes: DependencyNode<T>[]): DependencyNode<T>[] {
-    return nodes.filter((node, i, a) => a.findIndex(_node => _node.name === node.name) === i);
+  private _getDistinctFilterFn(): (
+    node: DependencyNode<T>,
+    i: number,
+    a: DependencyNode<T>[]
+  ) => boolean {
+    return (node, i, a) => a.findIndex(_node => _node.name === node.name) === i;
   }
 }

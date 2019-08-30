@@ -1,12 +1,9 @@
-import { PathsMap, DependenciesMap } from './models';
+import { Angular } from '../angular';
 
 export default class DependencyValidator {
-  constructor() {}
+  constructor(private _ng: Angular) {}
 
-  public getProjectValidatedDependencies(
-    imports: string[],
-    validateFn: (path: string) => boolean
-  ): string[] {
-    return imports.filter(validateFn);
+  public getValidatedProjects(projects: string[]): string[] {
+    return projects.filter(this._ng.getProjectValidatorFn());
   }
 }

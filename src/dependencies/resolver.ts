@@ -17,25 +17,13 @@ export class DependencyResolver {
     this._projects = this._ng.getProjects();
   }
 
-  // public resolveProjectsListAffecteds(list: string[]): string[] {
-  //   const allDepsMap: DependenciesMap = new Map();
-  //   this._recurseResolveProjectListDependencies(
-  //     this._ng.getProjectsNames(),
-  //     allDepsMap
-  //   );
-  //   const affecteds = [...allDepsMap]
-  //     .filter(([, pDeps]) => pDeps.some(pDep => list.includes(pDep)))
-  //     .map(([pName]) => pName);
-  //   // Logger.dir(affecteds);
-  //   return affecteds;
-  // }
+  public resolveProjectsAffectedBy<T>(projectName: string): DependencyNode<T>[] {
+    const allProjects = this._ng.getProjectsNames();
 
-  // public resolveProjectsListDependencies(list: string[]): string[] {
-  //   const rootNode = this._createRootNode(list);
-  //   const depsMap = this._recurseResolveProjectListDependencies(list);
-  //   // Logger.dir(depsMap);
-  //   return this._getSortedDependenciesList(depsMap);
-  // }
+    return allProjects
+      .map(project => this.resolveProjectDependencies<T>(project, 0))
+      .filter(node => node.childrenNames.includes(projectName));
+  }
 
   public resolveProjectDependencies<T>(projectName: string, maxDepth?: number): DependencyNode<T> {
     const rootNode = this._createDependencyNode(
@@ -50,15 +38,15 @@ export class DependencyResolver {
     node: DependencyNode<T>,
     maxDepth?: number
   ): DependencyNode<T> {
-    Logger.groupF`{yellow >} Resolving node {bold.blue ${node.name}}`;
+    Logger.groupF`{blue >} Resolving node {blue ${node.name}}`;
     Logger.logF`Depth: {blue ${node.gen}}`;
 
-    node.children = this._getDependencyNodeDependenciesMap(node);
-    Logger.log('Dependencies found:', node.getDependenciesNames());
+    node.children = this._getNodeDependenciesMap(node);
+    Logger.log('Dependencies found:', node.flatDistinctChildren().map(dep => dep.name));
 
     if (maxDepth != null && maxDepth === node.gen) {
       Logger.groupEnd();
-      Logger.logF`{yellow Max depth {bold (${maxDepth})} reached.}`;
+      Logger.logF`Max depth {yellow ${maxDepth}} reached.`;
       return node;
     }
 
@@ -71,15 +59,12 @@ export class DependencyResolver {
     return node;
   }
 
-  private _getDependencyNodeDependenciesMap<AngularProjectData>(
+  private _getNodeDependenciesMap<AngularProjectData>(
     node: DependencyNode<AngularProjectData>
   ): DependenciesMap<AngularProjectData> {
     const paths = this._ng.getProjectFilesPaths(node.data);
     const imports = this._cruiser.getProjectImports(paths);
-    const validated = this._validator.getProjectValidatedDependencies(
-      imports,
-      this._ng.getProjectValidatorFn()
-    );
+    const validated = this._validator.getValidatedProjects(imports);
     const entries = validated.map(
       dep =>
         [dep, this._createDependencyNode(dep, new Map(), this._projects.get(dep), node)] as [

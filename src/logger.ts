@@ -28,8 +28,8 @@ export default class Logger {
     console.log(...this._formatString(args, chalk.bold.green));
   }
 
-  public static dir(o: {}) {
-    console.dir(o, { depth: null });
+  public static dir(o: {}, depth?: number) {
+    console.dir(o, { depth });
   }
 
   public static tree(o: {}, values = true) {

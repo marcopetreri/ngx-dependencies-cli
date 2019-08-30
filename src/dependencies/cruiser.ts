@@ -1,5 +1,6 @@
 import { cruise } from 'dependency-cruiser';
 import { PathsMap } from './models';
+import Logger from '../logger';
 
 export class DependencyCruiser {
   constructor() {}
@@ -10,17 +11,14 @@ export class DependencyCruiser {
       tsPreCompilationDeps: true
     });
 
-    const deps = cruised.modules.map(
-      (module: { source: string }) => module.source
-    ) as string[];
+    const deps = cruised.modules.map((module: { source: string }) => module.source) as string[];
 
     return deps;
   }
 
   getProjectsImports(projectsFilesPaths: PathsMap): PathsMap {
     const deps = [...projectsFilesPaths].map(
-      ([name, paths]) =>
-        [name, this.getProjectImports(paths)] as [string, string[]]
+      ([name, paths]) => [name, this.getProjectImports(paths)] as [string, string[]]
     );
     return new Map(deps);
   }
