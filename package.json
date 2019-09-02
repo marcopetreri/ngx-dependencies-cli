@@ -1,6 +1,6 @@
 {
   "name": "ngx-dependencies-cli",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "ng-cli wrapper that takes in account for dependencies ",
   "main": "dist/public_api.js",
   "bin": {
