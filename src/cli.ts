@@ -37,7 +37,7 @@ cli
 
 cli
   .command('build [project]')
-  .description('Builds [project] with their dependencies')
+  .description('builds [project] with its dependencies')
   .allowUnknownOption()
   // .option('-a, --affected', 'Builds all projects affected by [projects]')
   // .option('-A, --all', 'Builds all projects')
@@ -47,13 +47,13 @@ cli
 
 cli
   .command('list [project]')
-  .description('It Lists [project] dependencies')
-  .option('-a, --affected', 'Lists all projects affected by [project]')
-  .option('-s, --sorted', 'Sort dependencies list topologically')
-  .option('-r, --recursive', 'Applies recursive strategy to resolve the dependencies')
+  .description('lists [project] dependencies')
+  .option('-a, --affected', 'lists all projects affected by [project]')
+  .option('-s, --sorted', 'lists dependencies topologically sorted')
+  .option('-r, --recursive', 'applies recursive strategy to resolve the dependencies')
   .option(
     '-g, --generation [value]',
-    'Stop the dependencies resolve to [value] generation',
+    'stops the dependencies resolve to [value] generation',
     parseInt
   )
   .action(validateProjectArg(validator, getListCommand(ng, resolver, sorter)));
