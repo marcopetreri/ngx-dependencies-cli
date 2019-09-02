@@ -10,7 +10,11 @@ export const getListCommand = (
   resolver: DependencyResolver,
   sorter: DependencySorter
 ) => (project: string, cmd: Command) => {
-  const recursive = cmd.recursive ? null : cmd.generation ? cmd.generation : 0;
+  if (Logger.isDebugMode()) {
+    Logger.dir(cmd);
+  }
+
+  let recursive = cmd.recursive || cmd.sorted ? null : cmd.generation ? cmd.generation : 0;
 
   if (cmd.affected) {
     const depsList = resolver.resolveProjectsAffectedBy<AngularProjectData>(project);

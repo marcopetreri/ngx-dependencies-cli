@@ -38,15 +38,23 @@ export class DependencyResolver {
     node: DependencyNode<T>,
     maxDepth?: number
   ): DependencyNode<T> {
-    Logger.groupF`{blue >} Resolving node {blue ${node.name}}`;
-    Logger.logF`Depth: {blue ${node.gen}}`;
+    if (Logger.isDebugMode()) {
+      Logger.groupF`{blue >} Resolving node {blue ${node.name}}`;
+      Logger.logF`Depth: {blue ${node.gen}}`;
+    }
 
     node.children = this._getNodeDependenciesMap(node);
-    Logger.log('Dependencies found:', node.flatDistinctChildren().map(dep => dep.name));
+    if (Logger.isDebugMode()) {
+      Logger.log('Dependencies found:', node.flatDistinctChildren().map(dep => dep.name));
+    }
 
     if (maxDepth != null && maxDepth === node.gen) {
-      Logger.groupEnd();
-      Logger.logF`Max depth {yellow ${maxDepth}} reached.`;
+      if (Logger.isDebugMode()) {
+        Logger.groupEnd();
+      }
+      if (maxDepth > 0) {
+        Logger.logF`Max depth {yellow ${maxDepth}} reached.`;
+      }
       return node;
     }
 
@@ -54,7 +62,9 @@ export class DependencyResolver {
       this._recursingResolveDependencyNode(cNode, maxDepth);
     });
 
-    Logger.groupEnd();
+    if (Logger.isDebugMode()) {
+      Logger.groupEnd();
+    }
 
     return node;
   }

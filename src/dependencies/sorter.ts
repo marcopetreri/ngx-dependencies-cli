@@ -4,10 +4,7 @@ import { DependencyNode } from './models';
 export default class DependencySorter {
   constructor() {}
 
-  public getSortedDependencies<T>(
-    node: DependencyNode<T>,
-    withRoot?: boolean
-  ): DependencyNode<T>[] {
+  public getSortedDependencies<T>(node: DependencyNode<T>): DependencyNode<T>[] {
     const sorter = new TopologicalSort(new Map<string, DependencyNode<T>>());
     const deps = node.flatDistinctChildren();
 
@@ -21,10 +18,7 @@ export default class DependencySorter {
       });
     });
 
-    const sorted = [...sorter.sort().values()].map(node => node.node);
-    if (withRoot) {
-      sorted.push(node);
-    }
+    let sorted = [...sorter.sort().values()].map(node => node.node);
     return sorted.reverse();
   }
 

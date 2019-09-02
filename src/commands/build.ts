@@ -11,6 +11,10 @@ export const getBuildCommand = (
   resolver: DependencyResolver,
   sorter: DependencySorter
 ) => (project: string, cmd: Command) => {
+  if (Logger.isDebugMode()) {
+    Logger.dir(cmd);
+  }
+
   const remaining = extractUnknownOptions(cmd);
 
   let buildList: DependencyNode<AngularProjectData>[] = [];
@@ -20,11 +24,14 @@ export const getBuildCommand = (
       const depsTrees = resolver.resolveProjectsAffectedBy<AngularProjectData>(project);
     } else {
       const depsTree = resolver.resolveProjectDependencies<AngularProjectData>(project);
-      buildList = sorter.getSortedDependencies(depsTree, true);
+      buildList = sorter.getSortedDependencies(depsTree);
+      buildList.push(depsTree);
     }
   } catch (e) {
     Logger.error(e);
   }
+
+  Logger.logF`{green >} Building {yellow ${buildList.map(dep => dep.name).join(', ')}}`;
 
   const operations = buildList.map(dep => () =>
     ng.cli({

@@ -32,11 +32,12 @@ const resolver = new DependencyResolver(cruiser, sorter, validator, ng);
 
 cli
   .version('0.1.1', '-v, --version')
-  .description('ng-cli wrapper that takes in account for dependencies');
+  .description('ng-cli wrapper that takes in account for dependencies')
+  .option('-d, --debug', 'output debug informations', false);
 
 cli
   .command('build [project]')
-  .description('Builds [projects] with their dependencies')
+  .description('Builds [project] with their dependencies')
   .allowUnknownOption()
   // .option('-a, --affected', 'Builds all projects affected by [projects]')
   // .option('-A, --all', 'Builds all projects')
@@ -46,9 +47,9 @@ cli
 
 cli
   .command('list [project]')
-  .description('It Lists [projects] dependencies')
-  .option('-a, --affected', 'Lists all projects affected by [projects]')
-  .option('-s, --sorted', 'Sort topologically')
+  .description('It Lists [project] dependencies')
+  .option('-a, --affected', 'Lists all projects affected by [project]')
+  .option('-s, --sorted', 'Sort dependencies list topologically')
   .option('-r, --recursive', 'Applies recursive strategy to resolve the dependencies')
   .option(
     '-g, --generation [value]',
@@ -57,6 +58,12 @@ cli
   )
   .action(validateProjectArg(validator, getListCommand(ng, resolver, sorter)));
 
-cli.option('--debug [value]', 'Prints debug informations', false);
+cli.on('option:debug', () => {
+  Logger.debugMode = true;
+});
+
+if (!process.argv.slice(2).length) {
+  cli.help();
+}
 
 cli.parse(process.argv);

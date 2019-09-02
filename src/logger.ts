@@ -3,6 +3,11 @@ import treeify from 'treeify';
 
 export default class Logger {
   private static style = chalk;
+  public static debugMode = false;
+
+  public static isDebugMode(): boolean {
+    return Logger.debugMode;
+  }
 
   public static log(...args: any[]) {
     console.log(...args);
