@@ -3,7 +3,7 @@ import { DependencyCruiser } from './cruiser';
 import DependencySorter from './sorter';
 import DependencyValidator from './validator';
 import { DependenciesMap, DependencyNode } from './models';
-import { Angular, AngularProjectsMap, AngularProjectData } from 'src/angular';
+import { Angular, AngularProjectsMap } from 'src/angular';
 
 export class DependencyResolver {
   private _projects: AngularProjectsMap;
@@ -59,9 +59,7 @@ export class DependencyResolver {
     return node;
   }
 
-  private _getNodeDependenciesMap<AngularProjectData>(
-    node: DependencyNode<AngularProjectData>
-  ): DependenciesMap<AngularProjectData> {
+  private _getNodeDependenciesMap<T>(node: DependencyNode<T>): DependenciesMap<T> {
     const paths = this._ng.getProjectFilesPaths(node.data);
     const imports = this._cruiser.getProjectImports(paths);
     const validated = this._validator.getValidatedProjects(imports);
@@ -69,7 +67,7 @@ export class DependencyResolver {
       dep =>
         [dep, this._createDependencyNode(dep, new Map(), this._projects.get(dep), node)] as [
           string,
-          DependencyNode<AngularProjectData>
+          DependencyNode<T>
         ]
     );
     return new Map(entries);

@@ -67,7 +67,7 @@ export class DependencyNode<T = null> {
 ${Logger.tree(this.childrenAsObject, true)}`;
   }
 
-  private _getDistinctFilterFn(): (
+  private _getDistinctFilterFn<T>(): (
     node: DependencyNode<T>,
     i: number,
     a: DependencyNode<T>[]

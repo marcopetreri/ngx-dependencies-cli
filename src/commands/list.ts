@@ -13,13 +13,13 @@ export const getListCommand = (
   const recursive = cmd.recursive ? null : cmd.generation ? cmd.generation : 0;
 
   if (cmd.affected) {
-    const depsList = resolver.resolveProjectsAffectedBy(project);
+    const depsList = resolver.resolveProjectsAffectedBy<AngularProjectData>(project);
     Logger.logF`{green >} Found {green ${
       depsList.length
     }} projects affected by {yellow ${project}}${(depsList.length > 0 && ':') ||
       '.'} {green ${depsList.map(dep => dep.name).join(', ')}}`;
   } else {
-    const depsTree = resolver.resolveProjectDependencies(project, recursive);
+    const depsTree = resolver.resolveProjectDependencies<AngularProjectData>(project, recursive);
     let depsList: DependencyNode<AngularProjectData>[];
 
     if (cmd.sorted) {

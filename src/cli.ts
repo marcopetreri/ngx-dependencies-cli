@@ -38,7 +38,7 @@ cli
   .command('build [project]')
   .description('Builds [projects] with their dependencies')
   .allowUnknownOption()
-  .option('-a, --affected', 'Builds all projects affected by [projects]')
+  // .option('-a, --affected', 'Builds all projects affected by [projects]')
   // .option('-A, --all', 'Builds all projects')
   // .option('-F, --filter [type]', 'Builds projects of certain type (library or application)')
   // .option('-l, --libraries', 'Builds all library projects')

@@ -17,8 +17,6 @@ export const getBuildCommand = (
 
   try {
     if (cmd.affected) {
-      // depsList = resolver.resolveProjectsListAffecteds(prjsList);
-      // depsList = resolver.resolveProjectsListDependencies(depsList);
       const depsTrees = resolver.resolveProjectsAffectedBy<AngularProjectData>(project);
     } else {
       const depsTree = resolver.resolveProjectDependencies<AngularProjectData>(project);
