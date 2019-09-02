@@ -1,7 +1,6 @@
 import Logger from '../logger';
 import { Angular, AngularProjectData } from '../angular';
 import { DependencyResolver } from '../dependencies/resolver';
-import { Command } from 'commander';
 import { DependencyNode } from '../dependencies/models';
 import DependencySorter from 'src/dependencies/sorter';
 
@@ -9,7 +8,7 @@ export const getListCommand = (
   ng: Angular,
   resolver: DependencyResolver,
   sorter: DependencySorter
-) => (project: string, cmd: Command) => {
+) => (project: string, cmd: any) => {
   if (Logger.isDebugMode()) {
     Logger.dir(cmd);
   }

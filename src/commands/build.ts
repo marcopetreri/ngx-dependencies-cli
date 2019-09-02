@@ -10,7 +10,7 @@ export const getBuildCommand = (
   ng: Angular,
   resolver: DependencyResolver,
   sorter: DependencySorter
-) => (project: string, cmd: Command) => {
+) => (project: string, cmd: any) => {
   if (Logger.isDebugMode()) {
     Logger.dir(cmd);
   }
