@@ -25,20 +25,26 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "publish": "npm run build && npm publish"
+    "publish": "npm run build && npm publish",
+    "publish-major": "npm version major && npm publish",
+    "publish-minor": "npm version minor && npm publish",
+    "publish-patch": "npm version patch && npm publish"
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@angular/cli": "^7.3.8",
     "chalk": "^2.4.2",
     "commander": "^2.20.0",
     "dependency-cruiser": "^4.21.0",
     "topological-sort": "^0.3.0",
-    "treeify": "^1.1.0"
+    "treeify": "^1.1.0",
+    "source-map-support": "^0.5.12"
   },
   "devDependencies": {
     "@types/node": "^11.13.5",
     "@types/treeify": "^1.0.0",
-    "source-map-support": "^0.5.12",
     "typescript": "^3.4.3"
   }
 }

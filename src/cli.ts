@@ -31,7 +31,7 @@ const cruiser = new DependencyCruiser(),
 const resolver = new DependencyResolver(cruiser, sorter, validator, ng);
 
 cli
-  .version('0.1.1', '-v, --version')
+  .version('1.0.2', '-v, --version')
   .description('ng-cli wrapper that takes in account for dependencies')
   .option('-d, --debug', 'output debug informations', false);
 
