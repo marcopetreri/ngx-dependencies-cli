@@ -26,9 +26,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "publish": "npm run build && npm publish",
-    "publish-major": "npm version major && npm publish",
-    "publish-minor": "npm version minor && npm publish",
-    "publish-patch": "npm version patch && npm publish"
+    "publish-major": "npm version major && npm run publish",
+    "publish-minor": "npm version minor && npm run publish",
+    "publish-patch": "npm version patch && npm run publish"
   },
   "files": [
     "dist"
