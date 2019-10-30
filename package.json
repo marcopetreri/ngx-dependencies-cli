@@ -1,18 +1,32 @@
 {
   "name": "ngx-dependencies-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ng-cli wrapper that takes in account for dependencies ",
+  "keywords": [
+    "angular",
+    "dependency",
+    "dependencies",
+    "cli",
+    "ng",
+    "wrapper",
+    "build"
+  ],
+  "author": "Marco Petreri <pepello92@gmail.com>",
+  "license": "CC-BY-NC-SA-2.5",
+  "homepage": "https://github.com/marcopetreri/ngx-dependencies-cli/",
   "main": "dist/public_api.js",
   "bin": {
     "ngd": "dist/cli.js"
+  },
+  "repository": {
+    "url": "https://github.com/marcopetreri/ngx-dependencies-cli.git",
+    "type": "git"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "publish": "npm run build && npm publish"
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "@angular/cli": "^7.3.8",
     "chalk": "^2.4.2",
