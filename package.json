@@ -1,6 +1,6 @@
 {
   "name": "ngx-dependencies-cli",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "ng-cli wrapper that takes in account for dependencies ",
   "keywords": [
     "angular",
@@ -25,10 +25,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "publish": "npm run build && npm publish",
-    "publish-major": "npm version major && npm run publish",
-    "publish-minor": "npm version minor && npm run publish",
-    "publish-patch": "npm version patch && npm run publish"
+    "publish": "npm run build && npm publish"
   },
   "files": [
     "dist"
